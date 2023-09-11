@@ -39,11 +39,11 @@ func (m *Mutex) Lock() {
 	/*kilolog.Debug("Lock", getCaller())
 	x++*/
 	m.m.Lock()
-	//kilolog.Debug("Lock successful")
+	//kilolog.Debug("Lock successful (", x, ")")
 }
 func (m *Mutex) Unlock() {
 	//kilolog.Debug("Unlock", getCaller())
 	m.m.Unlock()
 	/*x--
-	kilolog.Debug("There are still", x, "locked mutex")*/
+	kilolog.Debug("Unlock successful (", x, "remaining)")*/
 }

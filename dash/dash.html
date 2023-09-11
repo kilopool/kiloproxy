@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<head>
+	<title>Kiloproxy Dashboard</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		:root {
+			font-family: sans-serif;
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0px;
+			overflow-x: hidden;
+		}
+
+		nav {
+			width: 100vw;
+			background-color: #444;
+			color: #fff;
+			padding: 1rem;
+		}
+
+		nav>h1 {
+			margin: 0px;
+			font-weight: normal;
+			font-size: 1.2rem;
+		}
+
+		.right {
+			position: absolute;
+			right: 1.5rem;
+			top: 1rem;
+		}
+
+		.darka {
+			color: #88e3ff;
+		}
+
+		main {
+			width: 100%;
+			display: flex;
+		}
+
+		main>div {
+			padding: 1rem;
+		}
+
+		main>.half1 {
+			flex-grow: 3;
+			max-width: 70%;
+		}
+
+		main>.half2 {
+			flex-grow: 1;
+		}
+	</style>
+</head>
+
+<body>
+	<nav>
+		<h1>Kiloproxy Dashboard</h1>
+		<div class="right">By <a class="darka" href="https://kilopool.com/">KiloPool</a></div>
+	</nav>
+	<main>
+		<div class="half1">
+			<canvas></canvas>
+		</div>
+		<div class="half2">
+			Current Hashrate: <span id="hr">0 </span>H/s<br>
+			Connected Miners: <span id="miners">0</span><br>
+			Upstreams: <span id="upstreams">0</span><br>
+
+			<details>
+				<summary>Configuration</summary>
+				<textarea readonly id="config_code" style="width:500px;max-width:25vw;height:400px;">Not Loaded Yet</textarea>
+			</details>
+			  
+		</div>
+	</main>
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script>
+		var cLabels = []
+		var cData = []
+		var cMiners = []
+
+		const config = {
+			responsive: true,
+			interaction: {mode: 'index',intersect: false,},
+			stacked: false,
+			plugins: {title: {display: false,}},
+			scales: {
+				y: {type: 'linear',display: true,position: 'left',
+				},
+				y1: {
+					type: 'linear',display: true,position: 'right',
+					grid: { drawOnChartArea: false, },
+				},
+			},
+			animation: {
+				duration: 0
+			}
+		}
+		function drawChart() {
+			const ctx = document.querySelector("canvas");
+			const data = {
+				labels: cLabels,
+				datasets: [
+					{
+						label: "Hashrate (kH/s)",
+						data: cData,
+						borderColor: "#f00",
+						backgroundColor: "#f007",
+						yAxisID: "y",
+					},
+					{
+						label: "Connected Miners",
+						data: cMiners,
+						borderColor: "#00f",
+						backgroundColor: "#00f7",
+						yAxisID: 'y1',
+					}
+				]
+			};
+
+			new Chart(ctx, {
+				type: 'line',
+				data: data,
+				options: config
+			});
+		}
+		fetch("/hr_chart_js").then(r=>r.json()).then(res=>{
+			cLabels = res.labels
+			cData = res.data
+			cMiners =  res.miners
+			drawChart()
+		})
+
+
+		function formatHr(f) {
+			if (f > 1000 * 1000) {
+				return (f / 1000 / 1000).toFixed(2) + " M"
+			} else if (f > 1000) {
+				return (f / 1000).toFixed(2) + " k"
+			} else {
+				return Math.round(f) + " "
+			}
+		}
+
+		fetch("/configuration").then(r => r.json()).then((res) => {
+				console.log(res)
+				document.getElementById("config_code").value = JSON.stringify(res, null, " ")
+			})
+
+		function refreshStats() {
+			fetch("/stats").then(r => r.json()).then((res) => {
+				console.log(res)
+				document.getElementById("hr").innerText = formatHr(res.hr)
+				document.getElementById("miners").innerText = res.miners
+				document.getElementById("upstreams").innerText = res.upstreams
+			})
+		}
+		refreshStats()
+		setInterval(refreshStats, 5000)
+	</script>
+</body>

@@ -39,6 +39,11 @@ type Config struct {
 		Port uint16 `json:"port"`
 		Tls  bool   `json:"tls"`
 	} `json:"bind"`
+	Dashboard struct {
+		Enabled bool   `json:"enabled"`
+		Port    uint16 `json:"port"`
+		Host    string `json:"host"`
+	} `json:"dashboard"`
 	PrintInterval  uint16 `json:"print_interval"`
 	Interactive    bool   `json:"interactive"`
 	MaxConcurrency int    `json:"max_concurrency"`
@@ -75,6 +80,11 @@ const DefaultConfig = `{
 			"tls": true
 		}
 	],
+	"dashboard": {
+		"enabled": false,
+		"port": 1315,
+		"host": "0.0.0.0"
+	},
 	"print_interval": 60,
 	"interactive": true,
 	"max_concurrency": 4,

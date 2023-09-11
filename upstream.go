@@ -132,7 +132,9 @@ func UpstreamHandler(us *Upstream, jobChan <-chan *rpc.CompleteJob) {
 			} else {
 				kilolog.Debug("recvJob is nil")
 			}
+			UpstreamsMut.Lock()
 			us.Close()
+			UpstreamsMut.Unlock()
 			return
 		}
 
@@ -142,9 +144,8 @@ func UpstreamHandler(us *Upstream, jobChan <-chan *rpc.CompleteJob) {
 	}
 }
 
+// upstream must be locked before closing
 func (us *Upstream) Close() {
-	UpstreamsMut.Lock()
-	defer UpstreamsMut.Unlock()
 
 	us.Stratum.Close()
 
@@ -166,12 +167,16 @@ func HandleUpstreamJob(us *Upstream, job *rpc.CompleteJob) {
 	UpstreamsMut.Lock()
 	defer UpstreamsMut.Unlock()
 
+	kilolog.Debug("New job for Upstream", us.ID, "part 2 TODO")
+
 	us.TopNicehash = 0
 
 	us.LastJob = *job
 
 	for _, v := range us.Clients {
+		kilolog.Debug("Sending to client", v)
 		srv.ConnsMut.Lock()
+		kilolog.Debug("Sending part 2")
 
 		//innerloop:
 		for _, conn := range srv.Connections {

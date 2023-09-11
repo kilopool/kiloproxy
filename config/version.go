@@ -30,4 +30,4 @@ func (v *Version) ToString() string {
 
 var VERSION = Version{1, 0, 0}
 
-var USERAGENT = "XMRig/" + VERSION.ToString()
+var USERAGENT = "Kiloproxy/" + VERSION.ToString()

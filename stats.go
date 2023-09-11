@@ -45,7 +45,33 @@ func formatHashrate(f float64) string {
 	}
 }
 
+type Hr struct {
+	Hr     float64 `json:"hr"`
+	Time   int64   `json:"time"`
+	Miners int     `json:"miners"`
+}
+
+var hrChart = make([]Hr, 0, 288)
+
 func Stats() {
+	go func() {
+		for {
+			time.Sleep(5 * time.Minute)
+
+			getStats()
+
+			if len(hrChart) == 288 {
+				hrChart = hrChart[1:]
+			}
+
+			hrChart = append(hrChart, Hr{
+				Hr:     avgHashrate,
+				Time:   time.Now().Unix(),
+				Miners: numMiners,
+			})
+		}
+	}()
+
 	for {
 		getStats()
 		kilolog.Statsf("%s avg, miners: "+kilolog.COLOR_CYAN+"%d"+kilolog.COLOR_WHITE+", upstreams: "+kilolog.COLOR_CYAN+"%d"+kilolog.COLOR_WHITE,
@@ -71,11 +97,13 @@ func getStats() {
 
 	avgHashrate = totalDiff / (config.HASHRATE_AVG_MINUTES * 60)
 
-	srv.ConnsMut.Lock()
-	numMiners = len(srv.Connections)
-	srv.ConnsMut.Unlock()
+	// TODO
 
-	UpstreamsMut.Lock()
+	//srv.ConnsMut.Lock()
+	numMiners = len(srv.Connections)
+	//srv.ConnsMut.Unlock()
+
+	//UpstreamsMut.Lock()
 	numUpstreams = len(Upstreams)
-	UpstreamsMut.Unlock()
+	//UpstreamsMut.Unlock()
 }

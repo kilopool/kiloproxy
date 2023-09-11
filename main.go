@@ -51,6 +51,8 @@ func main() {
 		runtime.GOMAXPROCS(config.CFG.MaxConcurrency)
 	}
 
+	go StartDashboard()
+
 	if config.CFG.Title {
 		colCyan := kilolog.COLOR_CYAN
 		colGreen := kilolog.COLOR_GREEN
@@ -90,6 +92,10 @@ func main() {
 				fmt.Sprintf("POOL #%d      %s", i, col+v.Url+kilolog.COLOR_RESET))
 		}
 
+	}
+
+	if config.CFG.Dashboard.Enabled {
+		kilolog.Info(fmt.Sprintf("Dashboard is available at http://127.0.0.1:%d", config.CFG.Dashboard.Port))
 	}
 
 	kilolog.Info("Using pool", config.CFG.Pools[0].Url)
